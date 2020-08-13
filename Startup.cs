@@ -19,6 +19,8 @@ namespace Swagger
 {
     public class Startup
     {
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -28,15 +30,26 @@ namespace Swagger
 
         public void ConfigureServices(IServiceCollection services)
         {
-            string con = "User Id = SYSTEM; Password=Hourse78;Data Source = localhost:1521/xe;";
+            string con = "User Id = SYSTEM; Password=+WB+H7H8KH8=1;Data Source = localhost:3333/ORCLCDB;";
             services.AddDbContext<MainContext>(options => options.UseOracle(con));
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddSwaggerGen();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(MyAllowSpecificOrigins,
+                          builder =>
+                          {
+                              builder.WithOrigins("http://localhost")
+                                                  .AllowAnyHeader()
+                                                  .AllowAnyMethod();
+                          });
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-
+            app.UseCors(MyAllowSpecificOrigins);
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
 
